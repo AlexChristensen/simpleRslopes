@@ -8,5 +8,5 @@ Description: Computes simple slopes (and intercepts) for most regression-based m
 Depends: R (>= 3.6.0)
 License: GPL (>= 3.0)
 Encoding: UTF-8
-Imports: ggplot2
+Imports: ggplot2, patchwork
 RoxygenNote: 7.1.2

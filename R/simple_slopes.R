@@ -9,9 +9,6 @@
 #' @param variable1name Character.
 #' Name of the first variable in interaction from \code{fit}
 #' 
-#' @param variable1type Character.
-#' Category type of the first variable in interaction from \code{fit}
-#' 
 #' @param variable1values Numeric.
 #' Values to be used when first variable is the moderator.
 #' If \code{variable1type = "dichotomous"}, then
@@ -22,9 +19,6 @@
 #' @param variable2name Character.
 #' Name of the second variable in interaction from \code{fit}
 #' 
-#' @param variable2type Character.
-#' Category type of the second variable in interaction from \code{fit}
-#' 
 #' @param variable2values Numeric.
 #' Values to be used when second variable is the moderator.
 #' If \code{variable2type = "dichotomous"}, then
@@ -32,7 +26,13 @@
 #' If \code{variable2type = "continuous"}, then
 #' defaults to values -1 SD, M, and +1 SD
 #' 
+#' @param plot_slopes Boolean.
+#' Should simple slopes be plotted?
+#' Defaults to \code{TRUE}
+#' 
 #' @return Returns a list containing:
+#' 
+#' \item{fit}{Returns \code{fit} object back}
 #' 
 #' \item{results}{Data frame with variable, moderator, values of moderator
 #' betas of simple slopes, \emph{t} values, \emph{p}-values, and significance level}
@@ -40,6 +40,8 @@
 #' \item{parameters}{A list containing degrees of freedom (\code{df}),
 #' betas (from \code{fit}), interaction name, variance-covariance matrix
 #' of the variables involved, and data from \code{fit}}
+#' 
+#' \item{plot_args}{Internal use only. Arguments for plots}
 #' 
 #' @examples
 #' # Generate data
@@ -56,10 +58,14 @@
 #' simple_slopes(
 #'   fit = fit,
 #'   variable1name = "x1", # must be name as it appears in 'fit' object
-#'   variable1type = "continuous",
 #'   variable2name = "x2", # must be name as it appears in 'fit' object
-#'   variable2type = "continuous"
+#'   plot = TRUE
 #' )
+#' 
+#' @references
+#' Preacher, K. J., Curran, P. J., & Bauer, D. J. (2006).
+#' Computational tools for probing interactions in multiple linear regression, multilevel modeling, and latent curve analysis.
+#' \emph{Journal of Educational and Behavioral Statistics}, \emph{31}(4), 437-448.
 #' 
 #' @author Alexander Christensen <alexpaulchristensen@gmail.com>
 #' 
@@ -72,11 +78,10 @@
 simple_slopes <- function(
   fit,
   variable1name,
-  variable1type = c("dichotomous", "continuous"),
   variable1values = NULL,
   variable2name,
-  variable2type = c("dichotomous", "continuous"),
-  variable2values = NULL
+  variable2values = NULL,
+  plot_slopes = TRUE
 )
 {
   # Check for names
@@ -88,19 +93,6 @@ simple_slopes <- function(
     }
   }
   
-  # Check for types
-  if(missing(variable1type) | missing(variable2type)){
-    if(missing(variable1type)){
-      stop("Variable type is missing for variable 1: 'variable1type'")
-    }else if(missing(variable2type)){
-      stop("Variable type is missing for variable 2: 'variable2type'")
-    }
-  }else{
-    # Match arguments
-    variable1type <- match.arg(variable1type)
-    variable2type <- match.arg(variable2type)
-  }
-  
   # Obtain regression parameters and variance-covariance matrix
   parameters <- regression_parameters(
     fit,
@@ -108,78 +100,123 @@ simple_slopes <- function(
     variable2name
   )
   
+  # Set up variable for plots
+  plot_args <- vector(mode = "list", length = 2)
+  names(plot_args) <- c(variable1name, variable2name)
+  
   # Check for values
-  if(variable1type == "continuous"){
+  if(parameters$variable1type == "continuous"){
     
     # Check if values is null
     if(is.null(variable1values)){
       
       # Message user
-      message("Values for variable 1 were not set using 'variable1values'. Using default of values -1 SD, M, and +1 SD")
+      message("Values for variable 1 were not set using 'variable1values'. Using default continuous values: -1 SD, M, and +1 SD")
       
       # Obtain values
       variable1values <- obtain_values(
         name = variable1name,
         parameters = parameters
       )
+      
+      # Variable 1 defaults
+      plot_args[[variable1name]]$default <- TRUE
+      
     }else{
+      
       # Sort values
       variable1values <- sort(variable1values)
+      
+      # Variable 1 defaults
+      plot_args[[variable1name]]$default <- FALSE
+
     }
     
-  }else if(variable1type == "dichotomous"){
+  }else if(parameters$variable1type == "dichotomous"){
     
     # Check if values is null
     if(is.null(variable1values)){
       
       # Message user
-      message("Values for variable 1 were not set using 'variable1values'. Using default of values 0 and 1")
+      message("Values for variable 1 were not set using 'variable1values'. Using default dichotomous values: 0 and 1")
       
       # Obtain values
       variable1values <- c(0, 1)
       
+      # Variable 1 defaults
+      plot_args[[variable1name]]$default <- TRUE
+      
     }else{
+      
       # Sort values
       variable1values <- sort(variable1values)
+      
+      # Variable 1 defaults
+      plot_args[[variable1name]]$default <- FALSE
+      
     }
     
   }
   
+  # Variable 1 type
+  plot_args[[variable1name]]$type <- parameters$variable1type
+  
   # Check for values
-  if(variable2type == "continuous"){
+  if(parameters$variable2type == "continuous"){
     
     # Check if values is null
     if(is.null(variable2values)){
       
       # Message user
-      message("Values for variable 2 were not set using 'variable2values'. Using default of values -1 SD, M, and +1 SD")
+      message("Values for variable 2 were not set using 'variable2values'. Using default continuous values: -1 SD, M, and +1 SD")
       
       # Obtain values
       variable2values <- obtain_values(
         name = variable2name,
         parameters = parameters
       )
-    }else{# Sort values
+      
+      # Variable 2 defaults
+      plot_args[[variable2name]]$default <- TRUE
+      
+    }else{
+      
+      # Sort values
       variable2values <- sort(variable2values)
+      
+      # Variable 2 defaults
+      plot_args[[variable2name]]$default <- FALSE
+      
     }
     
-  }else if(variable2type == "dichotomous"){
+  }else if(parameters$variable2type == "dichotomous"){
     
     # Check if values is null
     if(is.null(variable2values)){
       
       # Message user
-      message("Values for variable 2 were not set using 'variable2values'. Using default of values 0 and 1")
+      message("Values for variable 2 were not set using 'variable2values'. Using default dichotomous values: 0 and 1")
       
       # Obtain values
       variable2values <- c(0, 1)
       
+      # Variable 2 defaults
+      plot_args[[variable2name]]$default <- TRUE
+      
     }else{
+      
       # Sort values
       variable2values <- sort(variable2values)
+      
+      # Variable 2 defaults
+      plot_args[[variable2name]]$default <- FALSE
+      
     }
     
   }
+  
+  # Variable 2 type
+  plot_args[[variable2name]]$type <- parameters$variable2type
   
   # Compute simple slopes
   ## Variable 1
@@ -208,13 +245,9 @@ simple_slopes <- function(
   
   # Compute p-values
   ## Variable 1
-  variable1ps <- pt(
-    variable1ts, df = parameters$df
-  )
+  variable1ps <- (1 - pt(abs(variable1ts), df = parameters$df)) * 2
   ## Variable 2
-  variable2ps <- pt(
-    variable2ts, df = parameters$df
-  )
+  variable2ps <- (1 - pt(abs(variable2ts), df = parameters$df)) * 2
   
   # Set up results data frame
   results_df <- data.frame(
@@ -260,13 +293,26 @@ simple_slopes <- function(
   sig <- ifelse(results_df$p <= .10 , ".", sig)
   sig <- ifelse(results_df$p <= .05 , "*", sig)
   sig <- ifelse(results_df$p <= .01 , "**", sig)
-  sig <- ifelse(results_df$p <= .001 , "< .001", sig)
+  sig <- ifelse(results_df$p <= .001 , "***", sig)
   results_df$sig <- sig
   
   # Set up results list
   results_list <- list()
+  results_list$fit <- fit
   results_list$results <- results_df
   results_list$parameters <- parameters
+  results_list$plot_args <- plot_args
+  
+  # Class
+  class(results_list) <- "simpleRslopes"
+  
+  # Obtain plots
+  results_list$plots <- plot(results_list, one_plot = FALSE)
+  
+  # Check printing plots
+  if(isTRUE(plot_slopes)){
+    plot(results_list)
+  }
   
   # Return results
   return(results_list)

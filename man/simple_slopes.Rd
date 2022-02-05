@@ -7,11 +7,10 @@
 simple_slopes(
   fit,
   variable1name,
-  variable1type = c("dichotomous", "continuous"),
   variable1values = NULL,
   variable2name,
-  variable2type = c("dichotomous", "continuous"),
-  variable2values = NULL
+  variable2values = NULL,
+  plot_slopes = TRUE
 )
 }
 \arguments{
@@ -20,9 +19,6 @@ Object from a model fit using a regression model}
 
 \item{variable1name}{Character.
 Name of the first variable in interaction from \code{fit}}
-
-\item{variable1type}{Character.
-Category type of the first variable in interaction from \code{fit}}
 
 \item{variable1values}{Numeric.
 Values to be used when first variable is the moderator.
@@ -34,18 +30,21 @@ defaults to values -1 SD, M, and +1 SD}
 \item{variable2name}{Character.
 Name of the second variable in interaction from \code{fit}}
 
-\item{variable2type}{Character.
-Category type of the second variable in interaction from \code{fit}}
-
 \item{variable2values}{Numeric.
 Values to be used when second variable is the moderator.
 If \code{variable2type = "dichotomous"}, then
 defaults to values 0 and 1.
 If \code{variable2type = "continuous"}, then
 defaults to values -1 SD, M, and +1 SD}
+
+\item{plot_slopes}{Boolean.
+Should simple slopes be plotted?
+Defaults to \code{TRUE}}
 }
 \value{
 Returns a list containing:
+
+\item{fit}{Returns \code{fit} object back}
 
 \item{results}{Data frame with variable, moderator, values of moderator
 betas of simple slopes, \emph{t} values, \emph{p}-values, and significance level}
@@ -53,6 +52,8 @@ betas of simple slopes, \emph{t} values, \emph{p}-values, and significance level
 \item{parameters}{A list containing degrees of freedom (\code{df}),
 betas (from \code{fit}), interaction name, variance-covariance matrix
 of the variables involved, and data from \code{fit}}
+
+\item{plot_args}{Internal use only. Arguments for plots}
 }
 \description{
 Computes simple slopes for objects fit with
@@ -73,11 +74,15 @@ fit <- lm(y ~ x1 * x2, data = df)
 simple_slopes(
   fit = fit,
   variable1name = "x1", # must be name as it appears in 'fit' object
-  variable1type = "continuous",
   variable2name = "x2", # must be name as it appears in 'fit' object
-  variable2type = "continuous"
+  plot = TRUE
 )
 
+}
+\references{
+Preacher, K. J., Curran, P. J., & Bauer, D. J. (2006).
+Computational tools for probing interactions in multiple linear regression, multilevel modeling, and latent curve analysis.
+\emph{Journal of Educational and Behavioral Statistics}, \emph{31}(4), 437-448.
 }
 \author{
 Alexander Christensen <alexpaulchristensen@gmail.com>
