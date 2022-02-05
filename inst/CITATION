@@ -1,0 +1,14 @@
+citHeader("To cite simpleRslopes in publications use:")
+
+bibentry(
+	bibtype = "manual",
+	key	= "simpleRslopes",
+	title	= "{simpleRslopes}: Simply simple slopes for {R}",
+	author	= c(person("Christensen,", "P", "Alexander")),
+	year    = "2022",
+
+  textVersion  =
+  paste0("Christensen, A. P. (2022). ",
+        "simpleRslopes: Simply simple slopes for R ",
+	"R package version 0.0.1")
+)

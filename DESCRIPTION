@@ -1,0 +1,12 @@
+Package: simpleRslopes
+Title: Simply Simple Slopes for R
+Version: 0.0.1
+Date: 2022-02-05
+Authors@R: c(person("Alexander", "Christensen", email = "alexpaulchristensen@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9798-7037"))) 
+Maintainer: Alexander Christensen <alexpaulchristensen@gmail.com>
+Description: Computes simple slopes (and intercepts) for most regression-based models in R. Provides straightforward output, interpretations, and plots of simple slopes to aid in interpretability. Follows the computation of simple slopes provided by Preacher, Curran, and Bauer (2006) <doi:10.3102/10769986031004437>.  
+Depends: R (>= 3.6.0)
+License: GPL (>= 3.0)
+Encoding: UTF-8
+Imports: ggplot2
+RoxygenNote: 7.1.2
